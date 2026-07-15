@@ -5,8 +5,11 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class ChatConfig {
@@ -44,6 +47,19 @@ public class ChatConfig {
                         // logging.level.org.springframework.ai.chat.client.advisor: DEBUG
                         new SimpleLoggerAdvisor()
                 )
+
+                // 여기 명시한 필드만 yml 설정을 덮어씀 (병합 방식)
+                .defaultOptions(OpenAiChatOptions.builder()
+                        .model("gpt-4o-mini")       // 사용할 모델
+                        .temperature(0.7)           // 0.0=일관적/결정적, 2.0=창의적/무작위
+                        .maxTokens(1000)            // 응답 최대 길이 (비용 방어선)
+                        .topP(1.0)                  // 누적 확률 상위 P만 후보로 삼음. temperature와 같이 안 건드는 게 관례
+                        .frequencyPenalty(0.0)      // -2.0~2.0. 양수면 같은 단어 반복 억제
+                        .presencePenalty(0.0)       // -2.0~2.0. 양수면 이미 나온 주제 회피 → 새 화제로 유도
+                        .n(1)                       // 한 번에 생성할 응답 개수 (2.0에서 N() → n() 으로 변경)
+                        .stopSequences(List.of())   // 이 문자열이 나오면 생성 중단
+                        .user("user-id"))           // OpenAI 남용 탐지용 최종 사용자 식별자
+
                 .build();
     }
 }

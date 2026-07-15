@@ -7,10 +7,9 @@ spring:
     openai:
       api-key: ${OPENAI_API_KEY:sk-dummy}
       chat:
-        options:
-          model: gpt-4o-mini # 모델
-          temperature: 0.7 # 응답의 무작위성(기본값 0.7 / 0.0 같은 값 / 2.0 창의적 예측불가)
-          max-tokens: 1000 # 응답 최대 토큰 수(한글 1글자 1-2 토큰, 영어 1글자 1토큰)
+        model: gpt-4o-mini # 모델
+        temperature: 0.7 # 응답의 무작위성(기본값 0.7 / 0.0 같은 값 / 2.0 창의적 예측불가)
+        max-tokens: 1000 # 응답 최대 토큰 수(한글 1글자 1-2 토큰, 영어 1글자 1토큰)
 logging:
   level:
     org.springframework.ai.chat.client.advisor: DEBUG
