@@ -1,7 +1,7 @@
 package com.ll.back.chatAi;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,11 +13,14 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 public class ApiV1ChatController {
-    private final OpenAiChatModel chatModel;
+    private final ChatClient chatClient;
 
     @GetMapping("/ai")
     public Map<String, String> chat(@RequestParam String message) {
-        String response = chatModel.call(message);
+        String response = chatClient.prompt()
+                .user(message)
+                .call()
+                .content();
 
         return Map.of("응답 : ", response);
     }
