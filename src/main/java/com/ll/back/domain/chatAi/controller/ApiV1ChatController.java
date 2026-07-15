@@ -1,4 +1,4 @@
-package com.ll.back.chatAi;
+package com.ll.back.domain.chatAi.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
