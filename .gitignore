@@ -177,5 +177,10 @@ Temporary Items
 .gradle
 .idea
 .env
+# H2 Database
+*.db
+*.mv.db
+*.trace.db
+*.lock.db
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,intellij,java

@@ -2,14 +2,25 @@ spring:
   application:
     name: back
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env[.properties] # .env 파일을 읽도록 하는 설정
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY:sk-dummy}
+      base-url: https://api.groq.com/openai/v1 # 이렇게 재정의를 해야 OPENAI API 대신 GROQ API를 사용할 수 있다.
+      api-key: ${GROQ_API_KEY}
       chat:
-        model: gpt-4o-mini # 모델
-        temperature: 0.7 # 응답의 무작위성(기본값 0.7 / 0.0 같은 값 / 2.0 창의적 예측불가)
-        max-tokens: 1000 # 응답 최대 토큰 수(한글 1글자 1-2 토큰, 영어 1글자 1토큰)
+        model: meta-llama/llama-4-scout-17b-16e-instruct # 라마 모델을 사용할 것이다.
+        temperature: 0 # LLM의 창의성을 없애는 설정, 꼭 필요하다.
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always # 채팅 메세지 테이블이 없으면 무조건 생성하도록
+            platform: mariadb # 채팅 메세지 테이블 스키마 파일 선택(mysql을 사용한다고 하더라도 mariadb 스키마 파일을 사용해야 한다.)
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MariaDB # 실제 MySQL(MariaDB)를 사용해도 되지만 개발환경이기 때문에 편하게 H2를 MariaDB 모드로 사용
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
 logging:
   level:
     org.springframework.ai.chat.client.advisor: DEBUG

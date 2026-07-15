@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:db_test;MODE=MariaDB # 테스트 환경에서는 메모리 모드
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver

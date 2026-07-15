@@ -5,9 +5,12 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.chat.memory.repository.jdbc.MysqlChatMemoryRepositoryDialect;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.List;
 
@@ -15,14 +18,26 @@ import java.util.List;
 public class ChatConfig {
 
     /**
-     * 대화 메모리 - 이전 대화 내용을 기억
-     * MessageWindowChatMemory: 최근 N개 메시지만 유지 (슬라이딩 윈도우)
-     * 기본은 인메모리 저장이라 서버 재시작하면 날아감.
-     * 운영에서는 JdbcChatMemoryRepository 등으로 교체
+     * 대화 이력을 MySQL에 읽고 쓰는 저장소
+     * Dialect로 DB 종류 지정 (PostgreSQL이면 PostgresChatMemoryRepositoryDialect)
      */
     @Bean
-    public ChatMemory chatMemory() {
+    public JdbcChatMemoryRepository jdbcChatMemoryRepository(JdbcTemplate jdbcTemplate) {
+        return JdbcChatMemoryRepository.builder()
+                .jdbcTemplate(jdbcTemplate)
+                .dialect(new MysqlChatMemoryRepositoryDialect())
+                .build();
+    }
+
+    /**
+     * 대화 메모리 - 이전 대화 내용을 기억
+     * MessageWindowChatMemory: 최근 N개 메시지만 유지 (슬라이딩 윈도우)
+     * chatMemoryRepository를 지정하면 DB에 저장 → 서버 재시작해도 유지
+     */
+    @Bean
+    public ChatMemory chatMemory(JdbcChatMemoryRepository jdbcChatMemoryRepository) {
         return MessageWindowChatMemory.builder()
+                .chatMemoryRepository(jdbcChatMemoryRepository)
                 .maxMessages(20)  // 최근 20개 메시지 유지, 초과 시 오래된 것부터 제거
                 .build();
     }
@@ -50,7 +65,7 @@ public class ChatConfig {
 
                 // 여기 명시한 필드만 yml 설정을 덮어씀 (병합 방식)
                 .defaultOptions(OpenAiChatOptions.builder()
-                        .model("gpt-4o-mini")       // 사용할 모델
+                        .model("meta-llama/llama-4-scout-17b-16e-instruct")  // Groq 모델
                         .temperature(0.7)           // 0.0=일관적/결정적, 2.0=창의적/무작위
                         .maxTokens(1000)            // 응답 최대 길이 (비용 방어선)
                         .topP(1.0)                  // 누적 확률 상위 P만 후보로 삼음. temperature와 같이 안 건드는 게 관례
